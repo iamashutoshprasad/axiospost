@@ -56,8 +56,34 @@
       const listItem = document.createElement("li");
       listItem.textContent = `${user.username} - ${user.email} - ${user.phoneno}`;
 
+      const deleteButton = document.createElement("button");
+      deleteButton.textContent = "Delete";
+      deleteButton.addEventListener("click", () => {
+        deleteUser(user._id);
+        userDataList.removeChild(listItem);
+      });
+
+      listItem.appendChild(deleteButton);
       userDataList.appendChild(listItem);
     }
+    function deleteUser(userId) {
+      axios
+        .delete(
+          `https://crudcrud.com/api/b0be6d78a85c4f6e81bebc2496f64844/details/${userId}`
+        )
+        .then(function (response) {
+          console.log(response.data);
+        })
+        .catch(function (error) {
+          console.error(error);
+        });
+    }
+    const editButton = document.createElement("button");
+    editButton.textContent = "Edit";
+    editButton.addEventListener("click", () => {
+      editingUserId = user._id;
+      populateForm(user); // Fill the form with the user's data for editing
+    });
 
     window.addEventListener("DOMContentLoaded", () => {
       axios
