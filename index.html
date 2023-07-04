@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.4.0/axios.min.js"></script>
+  </head>
+  <body>
+    <h1>Login Page</h1>
+    <form id="loginForm">
+      <label for="username">username:</label>
+      <input type="text" id="username" name="username" /><br /><br />
+      <label for="email">Email:</label>
+      <input type="email" id="email" name="email" /><br /><br />
+      <label for="Phoneno">Phoneno:</label>
+      <input type="number" id="phoneno" name="phoneno" /><br /><br />
+      <button type="submit">Submit</button>
+      <ul id="userDataList"></ul>
+    </form>
+  </body>
+  <script>
+    const loginForm = document.getElementById("loginForm");
+    const userDataList = document.getElementById("userDataList");
+
+    loginForm.addEventListener("submit", function (event) {
+      event.preventDefault();
+
+      const username = document.getElementById("username").value;
+      const email = document.getElementById("email").value;
+      const phoneno = document.getElementById("phoneno").value;
+
+      const loginData = {
+        username: username,
+        email: email,
+        phoneno: phoneno,
+      };
+
+      axios
+        .post(
+          "https://crudcrud.com/api/b0be6d78a85c4f6e81bebc2496f64844/details",
+          loginData
+        )
+        .then(function (response) {
+          console.log(response.data);
+          showUserOnScreen(response.data);
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+
+      loginForm.reset();
+    });
+
+    function showUserOnScreen(user) {
+      const listItem = document.createElement("li");
+      listItem.textContent = `${user.username} - ${user.email} - ${user.phoneno}`;
+
+      userDataList.appendChild(listItem);
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      axios
+        .get(
+          "https://crudcrud.com/api/b0be6d78a85c4f6e81bebc2496f64844/details"
+        )
+        .then((response) => {
+          console.log(response);
+          const userData = response.data;
+          userData.forEach((user) => {
+            showUserOnScreen(user);
+          });
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    });
+  </script>
+</html>
