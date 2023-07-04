@@ -9,97 +9,146 @@
   <body>
     <h1>Login Page</h1>
     <form id="loginForm">
-      <label for="username">username:</label>
-      <input type="text" id="username" name="username" /><br /><br />
+      <label for="username">Username:</label>
+      <input type="text" id="username" name="username" required /><br /><br />
       <label for="email">Email:</label>
-      <input type="email" id="email" name="email" /><br /><br />
-      <label for="Phoneno">Phoneno:</label>
-      <input type="number" id="phoneno" name="phoneno" /><br /><br />
+      <input type="email" id="email" name="email" required /><br /><br />
+      <label for="phoneno">Phone Number:</label>
+      <input type="number" id="phoneno" name="phoneno" required /><br /><br />
       <button type="submit">Submit</button>
-      <ul id="userDataList"></ul>
     </form>
-  </body>
-  <script>
-    const loginForm = document.getElementById("loginForm");
-    const userDataList = document.getElementById("userDataList");
+    <ul id="userDataList"></ul>
 
-    loginForm.addEventListener("submit", function (event) {
-      event.preventDefault();
+    <script>
+      const loginForm = document.getElementById("loginForm");
+      const userDataList = document.getElementById("userDataList");
 
-      const username = document.getElementById("username").value;
-      const email = document.getElementById("email").value;
-      const phoneno = document.getElementById("phoneno").value;
+      loginForm.addEventListener("submit", function (event) {
+        event.preventDefault();
 
-      const loginData = {
-        username: username,
-        email: email,
-        phoneno: phoneno,
-      };
+        const username = document.getElementById("username").value;
+        const email = document.getElementById("email").value;
+        const phoneno = document.getElementById("phoneno").value;
 
-      axios
-        .post(
-          "https://crudcrud.com/api/b0be6d78a85c4f6e81bebc2496f64844/details",
-          loginData
-        )
-        .then(function (response) {
-          console.log(response.data);
-          showUserOnScreen(response.data);
-        })
-        .catch(function (error) {
-          console.log(error);
-        });
+        const loginData = {
+          username: username,
+          email: email,
+          phoneno: phoneno,
+        };
 
-      loginForm.reset();
-    });
+        axios
+          .post(
+            "https://crudcrud.com/api/b0be6d78a85c4f6e81bebc2496f64844/details",
+            loginData
+          )
+          .then(function (response) {
+            console.log(response.data);
+            showUserOnScreen(response.data);
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
 
-    function showUserOnScreen(user) {
-      const listItem = document.createElement("li");
-      listItem.textContent = `${user.username} - ${user.email} - ${user.phoneno}`;
-
-      const deleteButton = document.createElement("button");
-      deleteButton.textContent = "Delete";
-      deleteButton.addEventListener("click", () => {
-        deleteUser(user._id);
-        userDataList.removeChild(listItem);
+        loginForm.reset();
       });
 
-      listItem.appendChild(deleteButton);
-      userDataList.appendChild(listItem);
-    }
-    function deleteUser(userId) {
-      axios
-        .delete(
-          `https://crudcrud.com/api/b0be6d78a85c4f6e81bebc2496f64844/details/${userId}`
-        )
-        .then(function (response) {
-          console.log(response.data);
-        })
-        .catch(function (error) {
-          console.error(error);
-        });
-    }
-    const editButton = document.createElement("button");
-    editButton.textContent = "Edit";
-    editButton.addEventListener("click", () => {
-      editingUserId = user._id;
-      populateForm(user); // Fill the form with the user's data for editing
-    });
+      function showUserOnScreen(user) {
+        const listItem = document.createElement("li");
+        listItem.textContent = `${user.username} - ${user.email} - ${user.phoneno}`;
+        listItem.setAttribute("data-id", user._id);
 
-    window.addEventListener("DOMContentLoaded", () => {
-      axios
-        .get(
-          "https://crudcrud.com/api/b0be6d78a85c4f6e81bebc2496f64844/details"
-        )
-        .then((response) => {
-          console.log(response);
-          const userData = response.data;
-          userData.forEach((user) => {
-            showUserOnScreen(user);
-          });
-        })
-        .catch((error) => {
-          console.error(error);
+        const deleteButton = document.createElement("button");
+        deleteButton.textContent = "Delete";
+        deleteButton.addEventListener("click", () => {
+          deleteUser(user._id);
+          userDataList.removeChild(listItem);
         });
-    });
-  </script>
+
+        const editButton = document.createElement("button");
+        editButton.textContent = "Edit";
+        editButton.addEventListener("click", () => {
+          editUser(user);
+        });
+
+        listItem.appendChild(deleteButton);
+        listItem.appendChild(editButton);
+        userDataList.appendChild(listItem);
+      }
+
+      function editUser(user) {
+        const usernameInput = document.getElementById("username");
+        const emailInput = document.getElementById("email");
+        const phonenoInput = document.getElementById("phoneno");
+
+        usernameInput.value = user.username;
+        emailInput.value = user.email;
+        phonenoInput.value = user.phoneno;
+
+        const submitButton = document.querySelector("button[type='submit']");
+        submitButton.textContent = "Update";
+
+        submitButton.removeEventListener("click", updateUser); // Remove the previous event listener
+
+        submitButton.addEventListener("click", () => {
+          updateUser(user._id, {
+            username: usernameInput.value,
+            email: emailInput.value,
+            phoneno: phonenoInput.value,
+          });
+
+          submitButton.textContent = "Submit";
+          submitButton.removeEventListener("click", updateUser);
+          usernameInput.value = "";
+          emailInput.value = "";
+          phonenoInput.value = "";
+        });
+      }
+
+      function updateUser(userId, updatedData) {
+        axios
+          .put(
+            `https://crudcrud.com/api/b0be6d78a85c4f6e81bebc2496f64844/details/${userId}`,
+            updatedData
+          )
+          .then(function (response) {
+            console.log(response.data);
+            const listItem = document.querySelector(`li[data-id='${userId}']`);
+            listItem.textContent = `${updatedData.username} - ${updatedData.email} - ${updatedData.phoneno}`;
+          })
+          .catch(function (error) {
+            console.error(error);
+          });
+      }
+
+      function deleteUser(userId) {
+        axios
+          .delete(
+            `https://crudcrud.com/api/b0be6d78a85c4f6e81bebc2496f64844/details/${userId}`
+          )
+          .then(function (response) {
+            console.log(response.data);
+          })
+          .catch(function (error) {
+            console.error(error);
+          });
+      }
+
+      window.addEventListener("DOMContentLoaded", () => {
+        axios
+          .get(
+            "https://crudcrud.com/api/b0be6d78a85c4f6e81bebc2496f64844/details"
+          )
+          .then((response) => {
+            console.log(response);
+            const userData = response.data;
+            userData.forEach((user) => {
+              showUserOnScreen(user);
+            });
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+      });
+    </script>
+  </body>
 </html>
